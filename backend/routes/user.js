@@ -12,6 +12,29 @@ const signupBody = zod.object({
     lastName: zod.string(),
 })
 
+router.get("/me", authMiddleware, async (req,res)=>{
+    const userId = await User.findById(req.userId);
+    if(!userId){
+        return res.status(403).json({
+            msg : "Not Logged in"
+        })
+    }
+    const userDetails = await User.findById(userId);
+    const accountDetails = await Accounts.findOne({
+        userId : userId,
+    })
+    res.json({
+        user:{
+            firstName : userDetails.firstName,
+            lastName : userDetails.lastName,
+            username : userDetails.username,
+        },
+        account:{
+            balance : accountDetails.balance
+        }
+    });
+})
+
 router.post("/signup", async (req, res) => {
     const { success } = signupBody.safeParse(req.body)
     if (!success) {
